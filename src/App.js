@@ -1,71 +1,42 @@
 import React from "react";
 
 import styled from "styled-components";
-import axios from "axios";
-// import * as yup from "yup";
-// import { useForm } from "react-hook-form";
+
 import { MdDeleteOutline } from "react-icons/md";
-// import {} from '@hook'
+
+import { allUser, createData, DeleteData } from "./functionApi";
 
 function App() {
-	const [handleFormData, setHandleFormData] = React.useState({
+	const [alldata, setAllData] = React.useState([]);
+	const [usersD, setUserD] = React.useState({
 		first_name: "",
 		last_name: "",
 		username: "",
-		data_of_birth: "",
+		date_of_birth: "",
 	});
 
-	const [data, setData] = React.useState([]);
-
 	const getData = async () => {
-		await axios
-			.get("https://jekalobuild.vercel.app/api/users")
-			.then((response) => {
-				console.log(response);
-			})
-			.catch((error) => {
-				console.log(error);
-			});
+		const myd = await allUser();
+		if (myd) {
+			setAllData(myd);
+		}
+		console.log("see data", myd);
+		console.log("see data", alldata);
 	};
 
-	const handleonChnage = (e) => {
+	const onHandleSubmit = async (e) => {
 		e.preventDefault();
+		const result = await createData(usersD);
+		setAllData([...alldata, result]);
 
-		const fieldName = e.target.getAttribute("name");
-		const fieldValue = e.target.value;
-
-		// getting the existing formdata input
-		const newFormData = { ...handleFormData };
-
-		//updating the formdata with the input of the users
-
-		newFormData[fieldName] = fieldValue;
-
-		setHandleFormData(newFormData);
+		window.location.reload(setUserD(""));
 	};
 
-	const handleSubmit = async (e) => {
-		e.preventDefault();
-
-		const config = {
-			headers: {
-				"Access-Control-Allow-Origin": "*",
-				"Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-			},
-		};
-
-		const formData = new FormData();
-
-		formData.append("first_name", handleFormData.first_name);
-		formData.append("last_name", handleFormData.last_name);
-		formData.append("username", handleFormData.username);
-		formData.append("data_of_birth", handleFormData.data_of_birth);
-
-		await axios.post(
-			"http://jekalobuild.vercel.app/api/user",
-			formData,
-			config,
-		);
+	const removeUser = async (id) => {
+		await DeleteData(id);
+		const myUser = [...alldata];
+		myUser.filter((todo) => todo.id !== id);
+		setAllData(myUser);
 	};
 
 	React.useEffect(() => {
@@ -74,14 +45,16 @@ function App() {
 
 	return (
 		<Container>
-			<FormHold onSubmit={handleSubmit}>
+			<FormHold onSubmit={onHandleSubmit}>
 				<InputHold1>
 					<Hold>
 						{" "}
 						<span>First Name</span>
 						<input
-							onChange={handleonChnage}
-							name='first_name'
+							value={usersD.first_name}
+							onChange={(e) =>
+								setUserD({ ...usersD, first_name: e.target.value })
+							}
 							type='text'
 							required={true}
 							placeholder='First name'
@@ -91,8 +64,10 @@ function App() {
 						{" "}
 						<span>Last Name</span>
 						<input
-							onChange={handleonChnage}
-							name='last_name'
+							value={usersD.last_name}
+							onChange={(e) =>
+								setUserD({ ...usersD, last_name: e.target.value })
+							}
 							type='text'
 							required={true}
 							placeholder='Last name'
@@ -106,8 +81,10 @@ function App() {
 						{" "}
 						<span>Username </span>
 						<input
-							onChange={handleonChnage}
-							name='username'
+							value={usersD.username}
+							onChange={(e) =>
+								setUserD({ ...usersD, username: e.target.value })
+							}
 							type='text'
 							required={true}
 							placeholder='Username'
@@ -117,8 +94,10 @@ function App() {
 						{" "}
 						<span>Date of Birth</span>
 						<input
-							onChange={handleonChnage}
-							name='date_of_birth'
+							value={usersD.date_of_birth}
+							onChange={(e) =>
+								setUserD({ ...usersD, date_of_birth: e.target.value })
+							}
 							required={true}
 							placeholder='Date of Birth'
 						/>
@@ -130,20 +109,30 @@ function App() {
 			<UserHead>Users</UserHead>
 			<br />
 
-			<UserHold>
-				<Naming>
-					{" "}
-					<UserIcon>AH</UserIcon>
-					<UserName>giddy</UserName>
-					<FullName> Gideon ekekek</FullName>
-				</Naming>
-				<DelHold>
-					<UserDate>Date</UserDate>
-					<span>
-						<MdDeleteOutline />
-					</span>
-				</DelHold>
-			</UserHold>
+			{alldata.map((props) => (
+				<UserHold>
+					<Naming>
+						{" "}
+						<UserIcon>{props.name_prefix}</UserIcon>
+						<UserName>{props.username}</UserName>
+						<FullName>
+							{" "}
+							{props.first_name} {props.last_name}{" "}
+						</FullName>
+					</Naming>
+					<DelHold>
+						<UserDate>{props.date_of_birth}</UserDate>
+						<span>
+							<MdDeleteOutline
+								style={{ cursor: "pointer" }}
+								onClick={() => {
+									removeUser(props.username);
+								}}
+							/>
+						</span>
+					</DelHold>
+				</UserHold>
+			))}
 		</Container>
 	);
 }
@@ -154,7 +143,7 @@ const Naming = styled.div`
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	width: 300px;
+	/* width: 300px; */
 	font-weight: bold;
 `;
 
@@ -163,6 +152,7 @@ const UserHold = styled.div`
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
+	margin: 10px;
 `;
 const UserIcon = styled.div`
 	height: 40px;
@@ -176,8 +166,12 @@ const UserIcon = styled.div`
 	color: white;
 	font-size: 14px;
 `;
-const UserName = styled.div``;
-const FullName = styled.div``;
+const UserName = styled.div`
+	margin-left: 20px;
+`;
+const FullName = styled.div`
+	margin-left: 20px;
+`;
 const DelHold = styled.div`
 	display: flex;
 	align-items: center;
@@ -260,4 +254,6 @@ const Container = styled.div`
 	/* justify-content: center; */
 	flex-direction: column;
 	align-items: center;
+	overflow-y: scroll;
+	overflow-x: scroll;
 `;
