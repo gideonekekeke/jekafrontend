@@ -37,6 +37,8 @@ function App() {
 		const myUser = [...alldata];
 		myUser.filter((todo) => todo.id !== id);
 		setAllData(myUser);
+		// refreshing after delete
+		window.location.reload();
 	};
 
 	React.useEffect(() => {
@@ -94,6 +96,8 @@ function App() {
 						{" "}
 						<span>Date of Birth</span>
 						<input
+							type='date'
+							format='dd/mm/yyy'
 							value={usersD.date_of_birth}
 							onChange={(e) =>
 								setUserD({ ...usersD, date_of_birth: e.target.value })
