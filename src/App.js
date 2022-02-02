@@ -3,7 +3,7 @@ import React from "react";
 import styled from "styled-components";
 
 import { MdDeleteOutline } from "react-icons/md";
-
+import moment from "moment";
 import { allUser, createData, DeleteData } from "./functionApi";
 
 function App() {
@@ -97,7 +97,7 @@ function App() {
 						<span>Date of Birth</span>
 						<input
 							type='date'
-							format='dd/mm/yyy'
+							format='DD/MM/YYYY'
 							value={usersD.date_of_birth}
 							onChange={(e) =>
 								setUserD({ ...usersD, date_of_birth: e.target.value })
@@ -125,7 +125,9 @@ function App() {
 						</FullName>
 					</Naming>
 					<DelHold>
-						<UserDate>{props.date_of_birth}</UserDate>
+						<UserDate>
+							{moment(props.date_of_birth).format("DD-MM-YYYY")}
+						</UserDate>
 						<span>
 							<MdDeleteOutline
 								style={{ cursor: "pointer" }}
